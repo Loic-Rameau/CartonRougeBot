@@ -4,23 +4,21 @@ import sqlite3
 ROUGE = 629594572720177152
 JAUNE = 629606962044207115
 
+conn = sqlite3.connect('database.db')
+
 
 def _update(user, carton, nb):
-    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('UPDATE cartons SET nb = :nb where user=:user and type=:type',
                    {"user": user.id, "nb": nb, "type": carton})
     conn.commit()
-    conn.close()
 
 
 def _insert(user, carton):
-    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute('INSERT INTO cartons(user,nb,type) VALUES (:user, :nb,:type)',
                    {"user": user.id, "nb": 1, "type": carton})
     conn.commit()
-    conn.close()
 
 
 class Carton:
@@ -32,10 +30,8 @@ class Carton:
 
 def fethAllCartons():
     cartons = []
-    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM cartons ORDER BY user, type")
-    conn.close()
     for row in cursor.fetchall():
         cartons.append(Carton(row[0], row[2], row[1]))
     return cartons
@@ -43,15 +39,12 @@ def fethAllCartons():
 
 def getCartons(user, carton):
     cartons = Carton(user, carton)
-    conn = sqlite3.connect('database.db')
     cursor = conn.cursor()
     cursor.execute("SELECT nb FROM cartons WHERE user = ?", (user.id,))
     fetch = cursor.fetchone()
     if fetch is None:
-        conn.close()
         return cartons
     conn.commit()
-    conn.close()
     print(f'select where user {user.name} donne {fetch[0]} carton {carton}')
     if fetch:
         cartons.nb = fetch[0]
